@@ -1,5 +1,6 @@
 #!/usr/bin/php
 <?php
+	$minimum_sightings = 2;
 	$exts = array('line' => 'txt', 'json' => 'json', 'discard.email' => 'json');
 	$lists = array(
 		'line' => array(
@@ -48,13 +49,8 @@
 		}
 	}
 	foreach ($combined as $domain => $count)
-		if (!isset($sightings[$count]))
-			$sightings[$count] = array($domain);
-		else
-			$sightings[$count][] = $domain;
-	unset($combined);
-	foreach ($sightings as $count => $domains) {
-		sort($domains);
-		file_put_contents('disposable_email_providers_'.$count.'_sightings.txt', implode("\n", $domains));
-		file_put_contents('disposable_email_providers_'.$count.'_sightings.json', json_encode($domains, JSON_PRETTY_PRINT));
-	}
+		if ($count >= $minimum_sightings)
+			$sightings[] = $domain;
+	sort($sightings);
+	file_put_contents('disposable_email_providers.txt', implode("\n", $sightings));
+	file_put_contents('disposable_email_providers.json', json_encode($sightings, JSON_PRETTY_PRINT));
