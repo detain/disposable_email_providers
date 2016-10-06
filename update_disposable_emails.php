@@ -17,6 +17,8 @@
 			'https://discard.email/about-getDomains=55bea3fee498cb80f4d3060b738a5936.htm'
 		)
 	);
+	$combined = array();
+	$sightings = array();
 	foreach ($lists as $list_type => $list_data) {
 		foreach ($list_data as $url) {
 			if (preg_match('/^https?:\/\/([^\/]*)\.githubusercontent.com\/([^\/]+)\/([^\/]+)\/.*$/m', $url, $matches))
@@ -37,6 +39,22 @@
 					$domain_names[] = $domain_data['domain'];
 				}
 			}
-			file_put_contents('disposable-' . $filename, implode("\n", $domain_names));
+			foreach ($domain_names as $domain)
+				if (!isset($combined[$domain]))
+					$combined[$domain] = 1;
+				else
+					$combined[$domain]++;
+			//file_put_contents('disposable-' . $filename, implode("\n", $domain_names));
 		}
+	}
+	foreach ($combined as $domain => $count)
+		if (!isset($sightings[$count]))
+			$sightings[$count] = array($domain);
+		else
+			$sightings[$count][] = $domain;
+	unset($combined);
+	foreach ($sightings as $count => $domains) {
+		sort($domains);
+		file_put_contents('disposable_email_providers_'.$count.'_sightings.txt', implode("\n", $domains));
+		file_put_contents('disposable_email_providers_'.$count.'_sightings.json', json_encode($domains, JSON_PRETTY_PRINT));
 	}
